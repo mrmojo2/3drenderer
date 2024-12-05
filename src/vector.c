@@ -127,3 +127,29 @@ vec3_t vec3_rotate_z(vec3_t v, float angle){
 	return rotated_vector;
 }
 
+vec3_t get_vec3(vec4_t v){
+	vec3_t result = {
+		.x = v.x,
+		.y = v.y,
+		.z = v.z
+	};
+
+	return result;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Implementation of vec4_t functions
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+vec4_t get_vec4(vec3_t v){
+	vec4_t result =  {
+		.x = v.x,
+		.y = v.y,
+		.z = v.z,
+		.w = 1.0,
+	};
+
+	return result;
+}
