@@ -3,9 +3,9 @@
 
 #include "vector.h"
 
-typedef struct {
-	float m[4][4];
-} mat4_t;
+typedef struct{			//Fun Fact: Translation is NOT a linear transformation but a shear is
+	float m[4][4];		//so we raise an extra dimention and perform shear to get translation in original dimention
+} mat4_t;			//this is why we use 4x4 matrices to transform our 3d vertices
 
 
 mat4_t mat4_identity(void);
@@ -16,7 +16,7 @@ mat4_t mat4_get_rotation_matrix_z(float angle);
 mat4_t mat4_get_rotation_matrix_x(float angle);
 mat4_t mat4_get_rotation_matrix_y(float angle);
 
-
 vec4_t mat4_mul_vec4(mat4_t m, vec4_t v);
+mat4_t mat4_mul_mat4(mat4_t m1, mat4_t m2);
 
 #endif

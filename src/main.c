@@ -157,14 +157,17 @@ void update(void){
 		for(int j=0;j<3;j++){
 			vec4_t transformed_vertex = get_vec4(face_vertices[j]);
 			
-			//perfom transformation of vertices using matrices
-			//NOTE: always follow the order scale, rotate, transform, matrix multiplication is NOT commutative so order matters
-                        transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_matrix_x, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_matrix_y, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(rotation_matrix_z, transformed_vertex);
-			transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
+		     	//perfom transformation of vertices using matrices
+			mat4_t world_matrix = mat4_identity();
 			
+			world_matrix = mat4_mul_mat4(scale_matrix,world_matrix);		//NOTE:always follow the order scale,rotate,translate			
+			world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);		//as we are rotating about our coordinate axes so must rotate before translation
+			world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);	
+			world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
+			world_matrix = mat4_mul_mat4(translation_matrix,world_matrix);	
+			
+			transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
+
 			//save transformation in the array transformed_vertices
 			transformed_vertices[j] = transformed_vertex;
 		}

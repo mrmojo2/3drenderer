@@ -13,6 +13,17 @@ mat4_t mat4_identity(void){
 	return result;
 }
 
+mat4_t mat4_null(void){
+	mat4_t result = {{
+		{0,0,0,0},
+		{0,0,0,0},
+		{0,0,0,0},
+		{0,0,0,0}
+	}};
+
+	return result;
+}
+
 mat4_t mat4_get_scale_matrix(float sx, float sy, float sz){
 	// | sx  0   0  0 |
 	// | 0  sy   0  0 |
@@ -103,5 +114,19 @@ vec4_t mat4_mul_vec4(mat4_t m , vec4_t v){
 	result.z = v.x * m.m[2][0] + v.y * m.m[2][1] + v.z * m.m[2][2] + v.w * m.m[2][3];
 	result.w = v.x * m.m[3][0] + v.y * m.m[3][1] + v.z * m.m[3][2] + v.w * m.m[3][3];
 	
+	return result;
+}
+
+mat4_t mat4_mul_mat4(mat4_t m1, mat4_t m2){
+	mat4_t result = mat4_null();
+
+	for(int r=0;r<4;r++){
+		for(int c=0;c<4;c++){
+			for(int i=0;i<4;i++){
+				result.m[r][c] += (m1.m[r][i]*m2.m[i][c]); 
+			}
+		}
+	}	
+
 	return result;
 }
