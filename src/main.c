@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <SDL2/SDL.h>
@@ -11,10 +12,11 @@
 #include "array.h"
 #include "matrix.h"
 
+#define M_PI 3.141592
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                DIFFERENT OPTIONS FOR RENDERING
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-int SCALE_FACTOR       = 640;
 bool BACK_FACE_CULLING = false;
 bool OUTLINE_TRIANGLES = true;
 bool FILL_TRIANGLES    = false;
@@ -27,6 +29,7 @@ triangle_t* triangles_to_render = NULL;
 vec3_t camera_position = {0,0,0};
 bool is_running = false;
 int previous_frame_time=0;
+mat4_t projection_matrix;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +49,16 @@ void setup(char* obj_path){
 		window_width,
 		window_height
 	);
+
+	//initialize the perspective projection matrix
+	float fov    = M_PI/3.0;
+	float aspect = (float ) window_height / (float)window_width;
+	float znear  = 0.1; 
+	float zfar   = 100.0;
+	printf("height: %d, width: %d\n", window_height, window_width);
+	projection_matrix = get_perspective_projection_matrix(aspect,fov,zfar,znear);
 	
+	//load objfile or the default cube to mesh object
 	FILE *f = fopen(obj_path,"r"); 
 	if(f == NULL){
 		//loads default cube to mesh
@@ -99,14 +111,6 @@ void process_input(void){
 	}
 }
 
-//3d to 2d (perspective projection)
-vec2_t project(vec3_t point){
-	vec2_t result = {
-		.x = (SCALE_FACTOR*point.x)/point.z,
-		.y = (SCALE_FACTOR*point.y)/point.z
-		};
-	return result;
-}
 
 void update(void){
 	//control the fps of the game loop
@@ -121,9 +125,9 @@ void update(void){
 	triangles_to_render = NULL;
 
 	//rotate and scale the mesh object
-	mesh.rotation.x += 0.02;
-	mesh.rotation.y += 0.02;
-	mesh.rotation.z += 0.02;
+	//mesh.rotation.x += 0.02;
+	//mesh.rotation.y += 0.02;
+	//mesh.rotation.z += 0.02;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -133,11 +137,11 @@ void update(void){
 
 
 	//create scale ,rotation and transformation matrices
-	mat4_t scale_matrix       = mat4_get_scale_matrix(mesh.scale.x, mesh.scale.y, mesh.scale.y);
-	mat4_t rotation_matrix_x  = mat4_get_rotation_matrix_x(mesh.rotation.x); 	
-	mat4_t rotation_matrix_y  = mat4_get_rotation_matrix_y(mesh.rotation.y); 
-	mat4_t rotation_matrix_z  = mat4_get_rotation_matrix_z(mesh.rotation.z); 
-	mat4_t translation_matrix = mat4_get_translation_matrix(mesh.translation.x, mesh.translation.y,mesh.translation.z); 
+	mat4_t scale_matrix       = get_scale_matrix(mesh.scale.x, mesh.scale.y, mesh.scale.y);
+	mat4_t rotation_matrix_x  = get_rotation_matrix_x(mesh.rotation.x); 	
+	mat4_t rotation_matrix_y  = get_rotation_matrix_y(mesh.rotation.y); 
+	mat4_t rotation_matrix_z  = get_rotation_matrix_z(mesh.rotation.z); 
+	mat4_t translation_matrix = get_translation_matrix(mesh.translation.x, mesh.translation.y,mesh.translation.z); 
 	
 	//loop all triangle faces of our mesh
 	int num_faces = array_length(mesh.faces);
@@ -193,15 +197,22 @@ void update(void){
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		//                    loop all three vertices and perfrom projection
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		vec2_t projected_vertices[3];
+		vec4_t projected_vertices[3];
 		
 		for(int j =0 ; j < 3; j++){	
 			//project current vertex
-			projected_vertices[j] = project(get_vec3(transformed_vertices[j]));
+			projected_vertices[j] = vec4_project(projection_matrix,transformed_vertices[j]);
 			
+			printf("before projection: (%f, %f ,%f, %f)\n",transformed_vertices[j].x, transformed_vertices[j].y, transformed_vertices[j].z, transformed_vertices[j].w);
+			printf("after projection:  (%f, %f ,%f, %f)\n\n",projected_vertices[j].x, projected_vertices[j].y, projected_vertices[j].z, projected_vertices[j].w);
+
 			//scale and translate the projecte points to the middle of screen
-			projected_vertices[j].x += (window_width / 2);
-			projected_vertices[j].y += (window_height / 2);
+			projected_vertices[j].x *= (window_width/2.0);
+			projected_vertices[j].y  *= (window_height/2.0);
+			
+			projected_vertices[j].x += (window_width / 2.0);
+			projected_vertices[j].y += (window_height / 2.0);
+
 
 		}
 
@@ -219,7 +230,7 @@ void update(void){
 			.avg_depth = avg_z
 
 		};
-
+		
 		//save the projected triangle in the array of triangles to render
 		array_push(triangles_to_render, projected_triangle);	
 		
@@ -285,9 +296,6 @@ int main(int argc, char **argv){
 	int option;
 	while((option = getopt(argc,argv,"s:bf"))!=-1){
 		switch(option){
-			case 's':
-				SCALE_FACTOR = atoi(optarg);
-				break;
 			case 'b':
 				BACK_FACE_CULLING = true;
 				break;
