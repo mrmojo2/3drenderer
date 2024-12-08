@@ -203,8 +203,8 @@ void update(void){
 			//project current vertex
 			projected_vertices[j] = vec4_project(projection_matrix,transformed_vertices[j]);
 			
-			printf("before projection: (%f, %f ,%f, %f)\n",transformed_vertices[j].x, transformed_vertices[j].y, transformed_vertices[j].z, transformed_vertices[j].w);
-			printf("after projection:  (%f, %f ,%f, %f)\n\n",projected_vertices[j].x, projected_vertices[j].y, projected_vertices[j].z, projected_vertices[j].w);
+				//printf("before projection: (%f, %f ,%f, %f)\n",transformed_vertices[j].x, transformed_vertices[j].y, transformed_vertices[j].z, transformed_vertices[j].w);
+				//printf("after projection:  (%f, %f ,%f, %f)\n\n",projected_vertices[j].x, projected_vertices[j].y, projected_vertices[j].z, projected_vertices[j].w);
 
 			//scale and translate the projecte points to the middle of screen
 			projected_vertices[j].x *= (window_width/2.0);
