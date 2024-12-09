@@ -137,6 +137,14 @@ vec3_t get_vec3(vec4_t v){
 	return result;
 }
 
+vec3_t vec3_get_unit(vec3_t v){
+	vec3_t result = {
+		.x=v.x/vec3_length(v), 
+		.y=v.y/vec3_length(v), 
+		.z=v.z/vec3_length(v)
+	};
+	return result;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Implementation of vec4_t functions

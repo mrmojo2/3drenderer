@@ -11,6 +11,7 @@
 #include "mesh.h"
 #include "array.h"
 #include "matrix.h"
+#include "light.h"
 
 #define M_PI 3.141592
 
@@ -21,6 +22,7 @@ bool BACK_FACE_CULLING = false;
 bool OUTLINE_TRIANGLES = true;
 bool FILL_TRIANGLES    = false;
 bool COLOR_VERTEX      = false;
+bool SHADING	       = false;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                GLOBALS
@@ -106,6 +108,12 @@ void process_input(void){
 			if(event.key.keysym.sym == SDLK_d){
 				BACK_FACE_CULLING = false;
 			}
+			if(event.key.keysym.sym == SDLK_s){
+				SHADING = true;
+			}
+			if(event.key.keysym.sym == SDLK_f){
+				SHADING = false;
+			}
 
 			break;
 	}
@@ -125,9 +133,9 @@ void update(void){
 	triangles_to_render = NULL;
 
 	//rotate and scale the mesh object
-	//mesh.rotation.x += 0.02;
-	//mesh.rotation.y += 0.02;
-	//mesh.rotation.z += 0.02;
+	mesh.rotation.x  += 0.02;
+	mesh.rotation.y  += 0.02;
+	mesh.rotation.z += 0.02;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -176,23 +184,31 @@ void update(void){
 			transformed_vertices[j] = transformed_vertex;
 		}
 
-		if(BACK_FACE_CULLING){
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//                     perform backface culling
+		//                     perform backface culling and flat shading
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		vec3_t A = get_vec3(transformed_vertices[0]); /*  A  */
 		vec3_t B = get_vec3(transformed_vertices[1]); /* / \ */
 		vec3_t C = get_vec3(transformed_vertices[2]); /* C-B */
 		
 		vec3_t normal = vec3_cross(vec3_sub(B,A),vec3_sub(C,A)); /* in right handed coordinate system do cross-product in opposite order....i think */
-
 		vec3_t camera_ray = vec3_sub(camera_position,A);
+		
+		vec3_t unit_normal = vec3_get_unit(normal);
+		vec3_t unit_camera_ray = vec3_get_unit(camera_ray);
+		vec3_t unit_light      = vec3_get_unit(light.direction);
 
-		//check alignment of normal with camera ray using dot product
-		float alignment = vec3_dot(normal,camera_ray);
+		//check alignment of normal with camera ray and light ray using dot product
+		float alignment_with_camera = vec3_dot(unit_normal,unit_camera_ray);
+		float alignment_with_light = vec3_dot(unit_normal,unit_light);
 
-		if(alignment < 0) continue;
+		if(BACK_FACE_CULLING){
+			if(alignment_with_camera < 0) continue;
 		}
+		if(SHADING){
+			mesh_face.color = light_apply_intensity(mesh_face.color, 1-(alignment_with_light+1)/2);
+		}
+		
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 		//                    loop all three vertices and perfrom projection
@@ -259,6 +275,11 @@ void render(void){
 		triangle_t triangle = triangles_to_render[i];
 		
 		if(FILL_TRIANGLES){
+			//////////////////////////////////////////////////////
+			//		applying flat shading
+			/////////////////////////////////////////////////////
+			
+
 			fill_triangle(triangle,triangle.color);
 		}
 		if(OUTLINE_TRIANGLES){
@@ -278,7 +299,7 @@ void render(void){
 
 	
 	render_color_buffer();
-	clear_color_buffer(0xFF000000);
+	clear_color_buffer(0xFFaabbcc);
 
 	SDL_RenderPresent(renderer);                  //This swaps the back buffer (where drawing happens) with the front buffer (displayed on the screen), making the rendered image visible to the user
 }

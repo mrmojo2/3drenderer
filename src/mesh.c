@@ -90,7 +90,7 @@ void load_obj_to_mesh(FILE *f)
 		{
 			/* NOTE: the obj file has no color value but our face_t structure requires it.... since we have not supplied face.color it takes random garbage value */
 			face_t face;
-
+			face.color = 0xff00ccaa;
 			int matches = sscanf(line_buffer, "f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d", &face.a,&face.b,&face.c);
 			if(matches < 3) {
 				matches = sscanf(line_buffer, "f %d %d %d", &face.a,&face.b,&face.c);
