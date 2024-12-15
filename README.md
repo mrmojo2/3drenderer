@@ -12,7 +12,7 @@ A Z-buffer is implemented to manage depth information, ensuring that objects are
 
 ## Output Preview
 
-![3D Renderer Output](https://drive.google.com/file/d/1y53UvovGRp_Nzd_uqDQ6gJALOD5EwN2m/view?usp=drive_link)
+![3D Renderer Output](assets/torus.gif)
 
 ## Getting Started
 
