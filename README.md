@@ -1,16 +1,7 @@
 # Simple 3D Renderer
 
-A simple 3D rendering engine based on rasterization. This project demonstrates the fundamentals of 3D rendering, including transformations, projection, and shading, implemented from scratch.
+A simple 3D rendering engine based on rasterization. This project demonstrates the fundamentals of 3D rendering, including transformations, projection, z-buffer, textures and shading, implemented from scratch.
 
-## Features
-
-This renderer is capable of loading and rendering 3D models stored in Wavefront OBJ format. It utilizes 3D transformation matrices to perform essential operations such as translation, rotation, and scaling, allowing for dynamic manipulation of objects in the scene.
-
-Projection is handled through matrices that account for aspect ratio and field of view (FOV). The renderer also includes clipping and backface culling techniques to optimize performance and avoid rendering unnecessary geometry.
-
-A Z-buffer is implemented to manage depth information, ensuring that objects are correctly layered based on their distance from the camera. 
-
-Flat Shading is implemented with a univrsal light source
 
 ## Output Preview
 
