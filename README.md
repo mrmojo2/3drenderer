@@ -10,6 +10,10 @@ Projection is handled through matrices that account for aspect ratio and field o
 
 A Z-buffer is implemented to manage depth information, ensuring that objects are correctly layered based on their distance from the camera. Additionally, the renderer incorporates simple lighting and shading methods to enhance the visual realism of rendered scenes.
 
+## Output Preview
+
+![3D Renderer Output](https://drive.google.com/file/d/1y53UvovGRp_Nzd_uqDQ6gJALOD5EwN2m/view?usp=drive_link)
+
 ## Getting Started
 
 ### Requirements
