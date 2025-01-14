@@ -106,7 +106,7 @@ void clear_color_buffer(uint32_t color)
     }
 }
 
-//drawing line using dda algorithm
+/*drawing line using dda algorithm
 void draw_line(int x0, int y0, int x1, int y1,uint32_t color){
 	int delta_x = x1-x0;
 	int delta_y = y1-y0;
@@ -125,7 +125,33 @@ void draw_line(int x0, int y0, int x1, int y1,uint32_t color){
 		current_x += x_inc;
 		current_y += y_inc;
 	}
+}*/
+
+//drawing line using Bresenham's algorithm
+void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
+    int dx = abs(x1 - x0);
+    int dy = abs(y1 - y0);
+    int sx = (x0 < x1) ? 1 : -1;
+    int sy = (y0 < y1) ? 1 : -1;
+    int err = dx - dy;
+
+    while (1) {
+        draw_pixel(x0, y0, color); // Draw the current pixel
+
+        if (x0 == x1 && y0 == y1) break; // End condition
+
+        int e2 = 2 * err;
+        if (e2 > -dy) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dx) {
+            err += dx;
+            y0 += sy;
+        }
+    }
 }
+
 
 
 void render_color_buffer()
