@@ -133,9 +133,9 @@ void update(void){
 	triangles_to_render = NULL;
 
 	//rotate and scale the mesh object
-	mesh.rotation.x  += 0.02;
-	mesh.rotation.y  += 0.02;
-	//mesh.rotation.z += 0.02;
+	mesh.rotation.x  += 0.00;
+	mesh.rotation.y  += 0.00;
+	mesh.rotation.z += 0.0;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -226,10 +226,12 @@ void update(void){
 			projected_vertices[j].x *= (window_width/2.0);
 			projected_vertices[j].y  *= (window_height/2.0);
 			
+			//flip y as direction of y in normal coordinates and screen coordinates is opposite
+			projected_vertices[j].y *= -1;
+
+
 			projected_vertices[j].x += (window_width / 2.0);
 			projected_vertices[j].y += (window_height / 2.0);
-
-
 		}
 
 		//calculate the avg depth of each face based on the vertices after transformation
