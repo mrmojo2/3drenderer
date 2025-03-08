@@ -12,6 +12,7 @@
 #include "array.h"
 #include "matrix.h"
 #include "light.h"
+#include "texture.h"
 
 #define M_PI 3.141592
 
@@ -21,6 +22,7 @@
 bool BACK_FACE_CULLING = false;
 bool OUTLINE_TRIANGLES = true;
 bool FILL_TRIANGLES    = false;
+bool TEXTURE_TRIANGLES    = false;
 bool COLOR_VERTEX      = false;
 bool SHADING	       = false;
 
@@ -70,6 +72,9 @@ void setup(char* obj_path){
 		//parse obj file and load object to mesh
 		load_obj_to_mesh(f);
 	}
+
+	//load texture file
+	load_png_texture("./assets/textures/bricksx64.png");
 }
 
 void process_input(void){
@@ -80,39 +85,23 @@ void process_input(void){
 			is_running = false;
 			break;
 		case SDL_KEYDOWN:
-			if(event.key.keysym.sym == SDLK_ESCAPE)
-				is_running=false;
-			if(event.key.keysym.sym == SDLK_1){
-				OUTLINE_TRIANGLES = true;
-				FILL_TRIANGLES    = false;
-				COLOR_VERTEX      = true;
-			}
-			if(event.key.keysym.sym == SDLK_2){
-				OUTLINE_TRIANGLES = true;
-				FILL_TRIANGLES    = false;
-				COLOR_VERTEX      = false;
-			}
-			if(event.key.keysym.sym == SDLK_3){
-				OUTLINE_TRIANGLES = false;
-				FILL_TRIANGLES    = true;
-				COLOR_VERTEX      = false;
-			}
-			if(event.key.keysym.sym == SDLK_4){
-				OUTLINE_TRIANGLES = true;
-				FILL_TRIANGLES    = true;
-				COLOR_VERTEX     = false;
+			if(event.key.keysym.sym == SDLK_ESCAPE){
+				is_running = false;
 			}
 			if(event.key.keysym.sym == SDLK_c){
-				BACK_FACE_CULLING = true;
-			}
-			if(event.key.keysym.sym == SDLK_d){
-				BACK_FACE_CULLING = false;
+				BACK_FACE_CULLING = !BACK_FACE_CULLING;
 			}
 			if(event.key.keysym.sym == SDLK_s){
-				SHADING = true;
+				SHADING = !SHADING; 
 			}
 			if(event.key.keysym.sym == SDLK_f){
-				SHADING = false;
+				FILL_TRIANGLES = !FILL_TRIANGLES;
+			}
+			if(event.key.keysym.sym == SDLK_o){
+				OUTLINE_TRIANGLES = !OUTLINE_TRIANGLES;
+			}
+			if(event.key.keysym.sym == SDLK_t){
+				TEXTURE_TRIANGLES = !TEXTURE_TRIANGLES;
 			}
 
 			break;
@@ -133,9 +122,9 @@ void update(void){
 	triangles_to_render = NULL;
 
 	//rotate and scale the mesh object
-	mesh.rotation.x  += 0.00;
-	mesh.rotation.y  += 0.00;
-	mesh.rotation.z += 0.0;
+	mesh.rotation.x = 0.00;
+	mesh.rotation.y = 0.00;
+	mesh.rotation.z = 0.00;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -245,8 +234,12 @@ void update(void){
 			},
 
 			.color = mesh_face.color,
-			.avg_depth = avg_z
-
+			.avg_depth = avg_z,
+			.texcoords = {
+				{mesh_face.a_uv.u, mesh_face.a_uv.v},
+				{mesh_face.b_uv.u, mesh_face.b_uv.v},
+				{mesh_face.c_uv.u, mesh_face.c_uv.v}
+			}
 		};
 		
 		//save the projected triangle in the array of triangles to render
@@ -275,14 +268,19 @@ void render(void){
 	int num_triangles = array_length(triangles_to_render);
 	for(int i=0;i<num_triangles;i++){
 		triangle_t triangle = triangles_to_render[i];
+		/*triangle_t triangle =  {
+			.points = {{100,200},{300,400},{600,500}},
+			.texcoords = {{100,200},{300,400},{600,100}},
+			.avg_depth = 0,
+			.color = 0xffffffff
+
+		};*/
 		
 		if(FILL_TRIANGLES){
-			//////////////////////////////////////////////////////
-			//		applying flat shading
-			/////////////////////////////////////////////////////
-			
-
 			fill_triangle(triangle,triangle.color);
+		}
+		if(TEXTURE_TRIANGLES){
+			draw_textured_triangle(triangle,texture);
 		}
 		if(OUTLINE_TRIANGLES){
 			draw_triangle(triangle,0xff808080);
@@ -310,6 +308,7 @@ void free_resources(){
 	array_free(mesh.faces);
 	array_free(mesh.vertices);
 	free(color_buffer);
+	free(texture);
 }
 
 

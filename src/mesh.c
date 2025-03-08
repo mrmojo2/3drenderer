@@ -15,6 +15,11 @@ mesh_t mesh = {
 	.translation = {0,0,0}
 };
 
+
+////////////////////////////////////////////////////////////////////
+//	Default cube
+////////////////////////////////////////////////////////////////////
+
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
     {.x = -1, .y = -1, .z = -1}, // 1
     {.x = -1, .y =  1, .z = -1}, // 2
@@ -28,23 +33,23 @@ vec3_t cube_vertices[N_CUBE_VERTICES] = {
 
 face_t cube_faces[N_CUBE_FACES] = {
     // front
-    {.a = 1, .b = 2, .c = 3, .color = 0xffff0000 },
-    {.a = 1, .b = 3, .c = 4, .color = 0xffff0000},
+    {.a = 1, .b = 2, .c = 3, .color = 0xffff0000, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 1, .b = 3, .c = 4, .color = 0xffff0000, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
     // right
-    {.a = 4, .b = 3, .c = 5, .color = 0xff00ff00},
-    {.a = 4, .b = 5, .c = 6, .color = 0xff00ff00},
+    {.a = 4, .b = 3, .c = 5, .color = 0xff00ff00, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 4, .b = 5, .c = 6, .color = 0xff00ff00, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
     // back
-    {.a = 6, .b = 5, .c = 7, .color = 0xff0000ff},
-    {.a = 6, .b = 7, .c = 8, .color = 0xff0000ff},
+    {.a = 6, .b = 5, .c = 7, .color = 0xff0000ff, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 6, .b = 7, .c = 8, .color = 0xff0000ff, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
     // left
-    {.a = 8, .b = 7, .c = 2, .color = 0xffffff00},
-    {.a = 8, .b = 2, .c = 1, .color = 0xffffff00},
+    {.a = 8, .b = 7, .c = 2, .color = 0xffffff00, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 8, .b = 2, .c = 1, .color = 0xffffff00, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
     // top
-    {.a = 2, .b = 7, .c = 5, .color = 0xffff00ff},
-    {.a = 2, .b = 5, .c = 3, .color = 0xffff00ff},
+    {.a = 2, .b = 7, .c = 5, .color = 0xffff00ff, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 2, .b = 5, .c = 3, .color = 0xffff00ff, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
     // bottom
-    {.a = 6, .b = 8, .c = 1, .color = 0xff00ffff},
-    {.a = 6, .b = 1, .c = 4, .color = 0xff00ffff},
+    {.a = 6, .b = 8, .c = 1, .color = 0xff00ffff, .a_uv = {0,0}, .b_uv = {0,1}, .c_uv = {1,1}},
+    {.a = 6, .b = 1, .c = 4, .color = 0xff00ffff, .a_uv = {0,0}, .b_uv = {1,1}, .c_uv = {1,0}},
 };
 
 
