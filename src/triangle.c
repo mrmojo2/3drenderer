@@ -249,8 +249,8 @@ void draw_texel(int x, int y, uint32_t *tex,vec2_t a, vec2_t b, vec2_t c, tex_t 
 	};
 
 	//fetch color from texture buffer
-	int col = texture_width*texel.u - 1;
-	int row =texture_height * (1.0 - texel.v);
+	int col = (texture_width - 1) * texel.u;
+	int row = (texture_height - 1) * (1.0 - texel.v);
 	int index = texture_width * row + col;
 	uint32_t color = 0xff000000;
 	if(index >=0 && index < texture_width*texture_height) color = tex[index];

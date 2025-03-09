@@ -74,7 +74,7 @@ void setup(char* obj_path){
 	}
 
 	//load texture file
-	load_png_texture("./assets/textures/bricksx64.png");
+	load_png_texture("./assets/textures/gai.png");
 }
 
 void process_input(void){
@@ -122,9 +122,9 @@ void update(void){
 	triangles_to_render = NULL;
 
 	//rotate and scale the mesh object
-	mesh.rotation.x = 0.00;
-	mesh.rotation.y = 0.00;
-	mesh.rotation.z = 0.00;
+	mesh.rotation.x += 0.01;
+	mesh.rotation.y += 0.01;
+	mesh.rotation.z += 0.01;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -268,14 +268,7 @@ void render(void){
 	int num_triangles = array_length(triangles_to_render);
 	for(int i=0;i<num_triangles;i++){
 		triangle_t triangle = triangles_to_render[i];
-		/*triangle_t triangle =  {
-			.points = {{100,200},{300,400},{600,500}},
-			.texcoords = {{100,200},{300,400},{600,100}},
-			.avg_depth = 0,
-			.color = 0xffffffff
-
-		};*/
-		
+	
 		if(FILL_TRIANGLES){
 			fill_triangle(triangle,triangle.color);
 		}
@@ -293,6 +286,36 @@ void render(void){
 		}
 
 	}
+	/*for(int i=0;i<texture_width;i++){
+		for(int j = 0 ; j < texture_height ; j++){
+			draw_pixel(i,j,texture[texture_width * i + j]);
+		}
+	}
+
+	triangle_t test = {
+		{{0,0},{0,window_height},{window_width,window_height}},
+		{{0,1},{0,0},{1,0}},
+		0xffff00ff,
+		69
+
+	};
+	if(FILL_TRIANGLES){
+		fill_triangle(test,test.color);
+	}
+	if(TEXTURE_TRIANGLES){
+		draw_textured_triangle(test,texture);
+	}
+	if(OUTLINE_TRIANGLES){
+		draw_triangle(test,0xff808080);
+	}
+	if(COLOR_VERTEX){
+		for(int i=0 ; i < 3; i++){
+			vec2_t vertex =test.points[i];
+			draw_rect(vertex.x, vertex.y,5,5,0xffff0000);
+		}
+	}*/
+
+
 
 	//clear the array of triangles to render every frame loop
 	array_free(triangles_to_render);
