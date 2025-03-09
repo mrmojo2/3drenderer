@@ -21,7 +21,7 @@ typedef struct {
 
 //this structure represent finally when rendering
 typedef struct {
-	vec2_t   points[3];
+	vec4_t   points[3];
 	tex_t    texcoords[3];
 	uint32_t color;
 	float    avg_depth;
@@ -29,8 +29,8 @@ typedef struct {
 
 void draw_triangle(triangle_t t, uint32_t color);
 void fill_triangle(triangle_t t, uint32_t color);
-void draw_textured_triangle(triangle_t t,uint32_t *texture);
+void draw_textured_triangle(triangle_t *t,uint32_t *texture);
 
 //TODO: fix texture mapping it doesn't work
-void draw_texel(int x, int y, uint32_t *texture,vec2_t a, vec2_t b, vec2_t c, tex_t, tex_t, tex_t);
+void draw_texel(int x, int y, uint32_t *texture,triangle_t *t,float,float,float);
 #endif

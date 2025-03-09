@@ -25,7 +25,8 @@ bool FILL_TRIANGLES    = false;
 bool TEXTURE_TRIANGLES    = false;
 bool COLOR_VERTEX      = false;
 bool SHADING	       = false;
-
+bool FLAT_SHADING      = true;
+bool GOUROUD_SHADING   = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                GLOBALS
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +75,7 @@ void setup(char* obj_path){
 	}
 
 	//load texture file
-	load_png_texture("./assets/textures/gai.png");
+	load_png_texture("./assets/textures/doge.png");
 }
 
 void process_input(void){
@@ -208,9 +209,6 @@ void update(void){
 			//project current vertex
 			projected_vertices[j] = vec4_project(projection_matrix,transformed_vertices[j]);
 			
-				//printf("before projection: (%f, %f ,%f, %f)\n",transformed_vertices[j].x, transformed_vertices[j].y, transformed_vertices[j].z, transformed_vertices[j].w);
-				//printf("after projection:  (%f, %f ,%f, %f)\n\n",projected_vertices[j].x, projected_vertices[j].y, projected_vertices[j].z, projected_vertices[j].w);
-
 			//scale and translate the projecte points to the middle of screen
 			projected_vertices[j].x *= (window_width/2.0);
 			projected_vertices[j].y  *= (window_height/2.0);
@@ -228,9 +226,9 @@ void update(void){
 
 		triangle_t projected_triangle = {
 			.points = {
-				{projected_vertices[0].x, projected_vertices[0].y},
-				{projected_vertices[1].x, projected_vertices[1].y},
-				{projected_vertices[2].x, projected_vertices[2].y},
+				{projected_vertices[0].x, projected_vertices[0].y,projected_vertices[0].z,projected_vertices[0].w},
+				{projected_vertices[1].x, projected_vertices[1].y,projected_vertices[1].z,projected_vertices[1].w},
+				{projected_vertices[2].x, projected_vertices[2].y,projected_vertices[2].z,projected_vertices[2].w},
 			},
 
 			.color = mesh_face.color,
@@ -239,7 +237,7 @@ void update(void){
 				{mesh_face.a_uv.u, mesh_face.a_uv.v},
 				{mesh_face.b_uv.u, mesh_face.b_uv.v},
 				{mesh_face.c_uv.u, mesh_face.c_uv.v}
-			}
+			},
 		};
 		
 		//save the projected triangle in the array of triangles to render
@@ -273,14 +271,14 @@ void render(void){
 			fill_triangle(triangle,triangle.color);
 		}
 		if(TEXTURE_TRIANGLES){
-			draw_textured_triangle(triangle,texture);
+			draw_textured_triangle(&triangle,texture);
 		}
 		if(OUTLINE_TRIANGLES){
 			draw_triangle(triangle,0xff808080);
 		}
 		if(COLOR_VERTEX){
 			for(int i=0 ; i < 3; i++){
-				vec2_t vertex = triangle.points[i];
+				vec4_t vertex = triangle.points[i];
 				draw_rect(vertex.x, vertex.y,5,5,0xffff0000);
 			}
 		}
@@ -290,10 +288,10 @@ void render(void){
 		for(int j = 0 ; j < texture_height ; j++){
 			draw_pixel(i,j,texture[texture_width * i + j]);
 		}
-	}
+	}*/
 
-	triangle_t test = {
-		{{0,0},{0,window_height},{window_width,window_height}},
+	/*triangle_t test = {
+		{{600,900,1,1},{100,200,1,1},{200,650,1,1}},
 		{{0,1},{0,0},{1,0}},
 		0xffff00ff,
 		69
@@ -303,14 +301,14 @@ void render(void){
 		fill_triangle(test,test.color);
 	}
 	if(TEXTURE_TRIANGLES){
-		draw_textured_triangle(test,texture);
+		draw_textured_triangle(&test,texture);
 	}
 	if(OUTLINE_TRIANGLES){
 		draw_triangle(test,0xff808080);
 	}
 	if(COLOR_VERTEX){
 		for(int i=0 ; i < 3; i++){
-			vec2_t vertex =test.points[i];
+			vec4_t vertex =test.points[i];
 			draw_rect(vertex.x, vertex.y,5,5,0xffff0000);
 		}
 	}*/
@@ -339,13 +337,19 @@ int main(int argc, char **argv){
 
 	//parse command line arguments
 	int option;
-	while((option = getopt(argc,argv,"s:bf"))!=-1){
+	while((option = getopt(argc,argv,"s:"))!=-1){
 		switch(option){
-			case 'b':
-				BACK_FACE_CULLING = true;
-				break;
-			case 'f':
-				FILL_TRIANGLES = true;
+			case 's':
+				s_value = optarg;
+				if(s_value){
+					if(strcmp(s_value,"f") == 0){
+						
+					}else if (strcmp(s_value,"g") == 0){
+					
+					}else {
+					
+					}
+				}
 				break;
 			case '?':
 				fprintf(stderr,"unknown option: -%c\n",optopt);
