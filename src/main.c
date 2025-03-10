@@ -13,6 +13,7 @@
 #include "matrix.h"
 #include "light.h"
 #include "texture.h"
+#include "options.h"
 
 #define M_PI 3.141592
 
@@ -196,7 +197,8 @@ void update(void){
 			if(alignment_with_camera < 0) continue;
 		}
 		if(SHADING){
-			mesh_face.color = light_apply_intensity(mesh_face.color, 1-(alignment_with_light+1)/2);
+			if(FLAT_SHADING)
+				mesh_face.color = light_apply_intensity(mesh_face.color, 1-(alignment_with_light+1)/2);
 		}
 		
 
@@ -268,7 +270,7 @@ void render(void){
 		triangle_t triangle = triangles_to_render[i];
 	
 		if(FILL_TRIANGLES){
-			fill_triangle(triangle,triangle.color);
+			fill_triangle(&triangle,triangle.color);
 		}
 		if(TEXTURE_TRIANGLES){
 			draw_textured_triangle(&triangle,texture);
@@ -337,14 +339,18 @@ int main(int argc, char **argv){
 
 	//parse command line arguments
 	int option;
+	char *s_value = NULL;
 	while((option = getopt(argc,argv,"s:"))!=-1){
 		switch(option){
 			case 's':
 				s_value = optarg;
 				if(s_value){
 					if(strcmp(s_value,"f") == 0){
-						
+						FLAT_SHADING = true;			
+						GOUROUD_SHADING =false;			
 					}else if (strcmp(s_value,"g") == 0){
+						FLAT_SHADING = false;			
+						GOUROUD_SHADING = true;			
 					
 					}else {
 					

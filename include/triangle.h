@@ -28,7 +28,7 @@ typedef struct {
 } triangle_t;
 
 void draw_triangle(triangle_t t, uint32_t color);
-void fill_triangle(triangle_t t, uint32_t color);
+void fill_triangle(triangle_t *t, uint32_t color);
 void draw_textured_triangle(triangle_t *t,uint32_t *texture);
 
 //TODO: fix texture mapping it doesn't work

@@ -2,50 +2,8 @@
 #include "display.h"
 #include "utils.h"
 #include "texture.h"
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                         fill_triangle() flat-bottom/flat-top division
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-//                                      (x0,y0)
-//                                         *
-//                                        *  *
-//                                       *     *
-//                                      *        *
-//                                     *           *
-//                                    *              *
-//                                   *                 *
-//                                  *                    *
-//                                 *                       *
-//                                *                          *
-//                               *                             *
-//                            (x1,y1)----------------------------(Mx,My)
-//                                 *                               *
-//                                     *                             *
-//                                         *                           *
-//                                             *                         *
-//                                                 *                       *
-//                                                     *                     *
-//                                                         *                   *
-//                                                             *                 *
-//                                                                 *               *
-//                                                                     *             *
-//                                                                         *           *
-//                                                                             *         *
-//                                                                                 *       *
-//                                                                                     *     *
-//                                                                                         *(x2,y2)
-//
-//
-//
-//
-//
-//
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#include "options.h"
+#include "light.h"
 
 void draw_triangle(triangle_t t, uint32_t color)
 {
@@ -54,95 +12,142 @@ void draw_triangle(triangle_t t, uint32_t color)
     draw_line(t.points[2].x, t.points[2].y, t.points[0].x, t.points[0].y, color);
 }
 
-
-void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color){
-
-/*
-	float slope1 =(float) (y1-y0) / (x1-x0);
-	float slope2 =(float) (y2-y0) / (x2-x0);
-
-	for(int y = y0; y < y2 ; y++){
-		int start_x = ((y-y0) / slope1) + x0;
-		int end_x   = ((y-y0) / slope2) + x0;
-		draw_line(start_x, y, end_x, y, color);
-	}
-*/
-
-	float inv_slope_1 = (float) (x1-x0) / (y1-y0);
-	float inv_slope_2 = (float) (x2-x0) / (y2-y0);
-
-	float x_start = x0;
-	float x_end   = x0;
-	for(int y = y0 ; y < y2; y++){
-		draw_line(x_start, y, x_end, y, color);
-		x_start += inv_slope_1;
-		x_end   += inv_slope_2;
-	}
-
-
-}
-
-void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2,uint32_t color){
+void fill_triangle(triangle_t *t,uint32_t color){
+	int x0 = (t->points[0].x);
+	int y0 = (t->points[0].y);
+	int z0 = (t->points[0].z);
+	int w0 = (t->points[0].w);
 	
-	float inv_slope_1 = (float) (x0-x2) / (y0-y2);
-	float inv_slope_2 = (float) (x1-x2) / (y1-y2);
-
-	float x_start = x0;
-	float x_end   = x1;
-	for(int y = y0;y < y2; y++){
-		draw_line(x_start,y,x_end,y,color);
-		x_start += inv_slope_1;
-		x_end   += inv_slope_2;
-	}
-}
-
-void fill_triangle(triangle_t t, uint32_t color)
-{
-
-	int y0 = t.points[0].y;
-	int x0 = t.points[0].x;
-	int y1 = t.points[1].y;
-	int x1 = t.points[1].x;
-	int y2 = t.points[2].y;
-	int x2 = t.points[2].x;
-
-	// sorting the vertices by y-cordinate ascending (y0 < y1 < y2)
+	int y1 = (t->points[1].y);
+	int x1 = (t->points[1].x);
+	int z1 = (t->points[1].z);
+	int w1 = (t->points[1].w);
+	
+	int y2 = (t->points[2].y);
+	int x2 = (t->points[2].x);
+	int z2 = (t->points[2].z);
+	int w2 = (t->points[2].w);
+	
+	// sorting the triangle t  by y-cordinate ascending (y0 < y1 < y2)
 	if(y0 > y1){
 		int_swap(&y0,&y1);
 		int_swap(&x0,&x1);
+		int_swap(&w0,&w1);
+		int_swap(&z0,&z1);
+
 	}
-	if(y1>y2){
+	if(y1 > y2){
 		int_swap(&y1,&y2);
 		int_swap(&x1,&x2);
+		int_swap(&w1,&w2);
+		int_swap(&z1,&z2);
 	}
-	if(y0>y1){
+	if(y0 > y1){
 		int_swap(&y0,&y1);   	
 		int_swap(&x0,&x1);
-	}
-
-	//handle special cases (causes divide by 0 inside fill_flat_bottom/top_triangle() )	
-	if(y1 == y2){
-		//triangle is already a flat bottomed triangle
-		fill_flat_bottom_triangle(x0,y0,x1,y1,x2,y2,color);
-		return;
-	}else if(y0 == y1){
-		//triangle is already flat topped triangle
-		fill_flat_top_triangle(x0,y0,x1,y1,x2,y2,color);
-		return;
+		int_swap(&w0,&w1);
+		int_swap(&z0,&z1);
 	}
 
 
+	
+	////////////////////////////////////////////////////////////
+	// Render the upper triangle (flat bottom)
+	////////////////////////////////////////////////////////////
+	float inv_slope1 = 0;
+	float inv_slope2 = 0;
 
-	// find point(Mx,My) for flatbottom/flatop partition   
-	int My = y1;
-	int Mx =(float)(((y1 - y0) * (x2 - x0)) / (float)(y2 - y0)) + x0;
 
+	if(y1 != y0) inv_slope1 =(float) (x1-x0) / (y1-y0);
+	if(y2 != y0) inv_slope2 =(float) (x2-x0) / (y2-y0);
+	
+	vec3_t a = {x0,y0,z0};
+	vec3_t b = {x1,y1,z1};
+	vec3_t c = {x2,y2,z2};
 
+	vec3_t normal_a = vec3_get_unit(vec3_cross(vec3_sub(b,a),vec3_sub(c,a))); //AB X AC
+	vec3_t normal_b = vec3_get_unit(vec3_cross(vec3_sub(c,b),vec3_sub(a,b))); //BC X BA
+	vec3_t normal_c = vec3_get_unit(vec3_cross(vec3_sub(a,c),vec3_sub(b,c))); //CA X CB
+	vec3_t light_normal = vec3_get_unit(light.direction);
 
-	fill_flat_bottom_triangle(x0,y0,x1,y1,Mx,My,color);
-	fill_flat_top_triangle(x1,y1,Mx,My,x2,y2,color);
+	float dot_a = vec3_dot(normal_a,light_normal); 
+	float dot_b = vec3_dot(normal_b,light_normal); 
+	float dot_c = vec3_dot(normal_c,light_normal); 
+	
+	//scan through the upper triangle
+	if(y1 != y0){								//if not lower triangle
+		for(int y = y0; y <= y1 ;y++){
+			int x_start = x1 + (y-y1)*inv_slope1;
+			int x_end   = x0 + (y-y0)*inv_slope2;
+			if(!GOUROUD_SHADING){	
+				draw_line(x_start,y,x_end,y,color);
+			}else{	
+				if(x_end < x_start) int_swap(&x_start, &x_end);
+					
+				for(int x = x_start; x < x_end; x++){
+					//calculate barycentric coords of current point
+					vec2_t p = {x,y};
+					vec2_t A = {x0,y0};
+					vec2_t B = {x1,y1};
+					vec2_t C = {x2,y2};
+
+					vec3_t weights = get_barycentric_coords(A,B,C,p);
+					float alpha = weights.x;
+					float beta = weights.y;
+					float gamma = weights.z;
+
+					//interpolate the dot product value at point p
+					float dot_p = alpha * dot_a + beta * dot_b + gamma * dot_c;
+
+					uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
+					draw_pixel(x,y,c);
+				}
+			}
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	//	Render the lower triangle
+	////////////////////////////////////////////////////////////////////
+	
+	if(y2 != y1) inv_slope1 = (float)(x2 - x1)/(y2-y1);
+	if(y2 != y0) inv_slope2 = (float)(x2 - x0)/(y2-y0);
+
+	for(int y = y1; y < y2; y++){
+		int x_start = x1 + (y - y1)*inv_slope1;
+		int x_end = x0 + (y - y0)*inv_slope2;
+
+		if(!GOUROUD_SHADING){	
+			draw_line(x_start,y,x_end,y,color);
+		}else{	
+			if(x_end < x_start) int_swap(&x_start, &x_end);
+				
+			for(int x = x_start; x < x_end; x++){
+				//calculate barycentric coords of current point
+				vec2_t p = {x,y};
+				vec2_t A = {x0,y0};
+				vec2_t B = {x1,y1};
+				vec2_t C = {x2,y2};
+
+				vec3_t weights = get_barycentric_coords(A,B,C,p);
+				float alpha = weights.x;
+				float beta = weights.y;
+				float gamma = weights.z;
+
+				//interpolate the dot product value at point p
+				float dot_p = alpha * dot_a + beta * dot_b + gamma * dot_c;
+
+				uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
+				draw_pixel(x,y,c);
+			}
+		}
+	}
+	
 }
 
+
+
+//TODO: THESE FLOATING POINTS ARE VERY BAD...i think
 void draw_textured_triangle(triangle_t *t,uint32_t *texture){
 	float *x0 = &(t->points[0].x);
 	float *y0 = &(t->points[0].y);
