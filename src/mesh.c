@@ -8,7 +8,9 @@
 #define LINE_BUFFER 1024
 
 mesh_t mesh = {
-	.vertices   = NULL,
+	.vertex_neighbor_list = NULL,
+	.world_vertices   = NULL,
+	.transformed_vertices   = NULL,
 	.faces      = NULL,
 	.rotation   = {0,0,0},
 	.scale      = {1.0,1.0,1.0},
@@ -56,7 +58,7 @@ face_t cube_faces[N_CUBE_FACES] = {
 void load_cube_to_mesh(void){
 	for(int i=0;i<N_CUBE_VERTICES;i++){
 		vec3_t cube_vertex = cube_vertices[i];
-		array_push(mesh.vertices,cube_vertex);
+		array_push(mesh.world_vertices,cube_vertex);
 	}
 	for(int i=0;i<N_CUBE_FACES;i++){
 		face_t cube_face = cube_faces[i];
@@ -88,7 +90,7 @@ void load_obj_to_mesh(FILE *f)
 		{
 			vec3_t vertex;	
 			sscanf(line_buffer,"v %f %f %f",&vertex.x,&vertex.y,&vertex.z);
-			array_push(mesh.vertices,vertex);
+			array_push(mesh.world_vertices,vertex);
 			//printf("v %f %f %f\n",vertex.x, vertex.y, vertex.z);
 		}
 		else if (strncmp(line_buffer, "f ", 2) == 0)
@@ -100,8 +102,49 @@ void load_obj_to_mesh(FILE *f)
 			if(matches < 3) {
 				matches = sscanf(line_buffer, "f %d %d %d", &face.a,&face.b,&face.c);
 			}
+			
+			vec3_t n = {0,0,0};
+			face.normal = n;
 			//printf("f %d %d %d\n",face.a, face.b, face.c); 
 			array_push(mesh.faces, face);
 		}
 	}
+}
+
+void generate_vertex_neighbor(void){
+	int num_vertices = array_length(mesh.world_vertices);
+	int num_faces = array_length(mesh.faces);
+	printf("num vertices: %d ",num_vertices);
+	printf("num faces   : %d  \n",num_faces);
+
+	for(int i=0; i< num_vertices; i++){
+		int vertex_index = i+1; 		//vertex index starts from 1 in obj file
+		face_t** neighbors = NULL;
+		for(int j = 0; j < num_faces; j++){
+			face_t* current_face = &mesh.faces[j];
+
+			if(current_face->a == vertex_index || current_face->b == vertex_index || current_face->c == vertex_index){
+				array_push(neighbors,current_face);
+			}
+		}
+		array_push(mesh.vertex_neighbor_list, neighbors);
+	}
+	
+	int s = array_length(mesh.vertex_neighbor_list);
+	for(int i=0; i<s; i++){
+		int is = array_length(mesh.vertex_neighbor_list[i]);
+		for(int j = 0; j<is; j++){
+			face_t* current = ((face_t **)mesh.vertex_neighbor_list[i])[j];
+			printf("(%d,%d,%d)  ",current->a,current->b,current->c);
+		}
+		printf("\n");
+	}
+}
+
+void free_neighbor_list(void){
+	int size = array_length(mesh.vertex_neighbor_list);
+	for(int i = 0; i < size; i++){
+		array_free(mesh.vertex_neighbor_list[i]);
+	}
+	array_free(mesh.vertex_neighbor_list);
 }

@@ -27,7 +27,7 @@ bool TEXTURE_TRIANGLES    = false;
 bool COLOR_VERTEX      = false;
 bool SHADING	       = false;
 bool FLAT_SHADING      = true;
-bool GOUROUD_SHADING   = false;
+bool GOUROUD_SHADING  = true;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                GLOBALS
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,7 @@ mat4_t projection_matrix;
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //                 FUNCTIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+void update(void);
 
 void setup(char* obj_path){
 	//allocate required memory to hold color buffer
@@ -127,6 +128,8 @@ void update(void){
 	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.01;
 	mesh.rotation.z += 0.01;
+	
+	//mesh.rotation.x  = -M_PI/4;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -148,9 +151,9 @@ void update(void){
 		face_t mesh_face = mesh.faces[i];
 		
 		vec3_t face_vertices[3]; 
-		face_vertices[0] = mesh.vertices[mesh_face.a-1];
-		face_vertices[1] = mesh.vertices[mesh_face.b-1];
-		face_vertices[2] = mesh.vertices[mesh_face.c-1];	
+		face_vertices[0] = mesh.world_vertices[mesh_face.a-1];
+		face_vertices[1] = mesh.world_vertices[mesh_face.b-1];
+		face_vertices[2] = mesh.world_vertices[mesh_face.c-1];	
 		
 		vec4_t transformed_vertices[3];
 
@@ -183,6 +186,7 @@ void update(void){
 		vec3_t C = get_vec3(transformed_vertices[2]); /* C-B */
 		
 		vec3_t normal = vec3_cross(vec3_sub(B,A),vec3_sub(C,A)); /* in right handed coordinate system do cross-product in opposite order....i think */
+		mesh.faces[i].normal = normal; 				//saving the normal for each face
 		vec3_t camera_ray = vec3_sub(camera_position,A);
 		
 		vec3_t unit_normal = vec3_get_unit(normal);
@@ -227,6 +231,7 @@ void update(void){
 		float avg_z = (transformed_vertices[0].z+transformed_vertices[1].z+transformed_vertices[2].z)/3.0;
 
 		triangle_t projected_triangle = {
+			.face = &(mesh.faces[i]),
 			.points = {
 				{projected_vertices[0].x, projected_vertices[0].y,projected_vertices[0].z,projected_vertices[0].w},
 				{projected_vertices[1].x, projected_vertices[1].y,projected_vertices[1].z,projected_vertices[1].w},
@@ -291,8 +296,14 @@ void render(void){
 			draw_pixel(i,j,texture[texture_width * i + j]);
 		}
 	}*/
-
-	/*triangle_t test = {
+	
+	/*vec3_t n = {1,2,3};
+	face_t f = {
+		.a = 1, .b = 2, .c = 3,
+		.normal = n
+	};
+	triangle_t test = {
+		.face = &f,
 		{{600,900,1,1},{100,200,1,1},{200,650,1,1}},
 		{{0,1},{0,0},{1,0}},
 		0xffff00ff,
@@ -300,7 +311,7 @@ void render(void){
 
 	};
 	if(FILL_TRIANGLES){
-		fill_triangle(test,test.color);
+		fill_triangle(&test,test.color);
 	}
 	if(TEXTURE_TRIANGLES){
 		draw_textured_triangle(&test,texture);
@@ -329,7 +340,9 @@ void render(void){
 
 void free_resources(){
 	array_free(mesh.faces);
-	array_free(mesh.vertices);
+	array_free(mesh.world_vertices);
+	array_free(mesh.transformed_vertices);
+	free_neighbor_list();
 	free(color_buffer);
 	free(texture);
 }
@@ -373,6 +386,9 @@ int main(int argc, char **argv){
 	is_running = initialize_window();
 	
 	setup(argv[optind]);
+
+	update();
+	generate_vertex_neighbor();
 
 	while(is_running){
 		process_input();

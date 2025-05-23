@@ -10,6 +10,9 @@ typedef struct {
 	int b;
 	int c;
 
+	//normal
+	vec3_t normal;
+
 	//texture uv coordinates for each vertices
 	tex_t a_uv;
 	tex_t b_uv;
@@ -21,6 +24,7 @@ typedef struct {
 
 //this structure represent finally when rendering
 typedef struct {
+	face_t* face;
 	vec4_t   points[3];
 	tex_t    texcoords[3];
 	uint32_t color;
