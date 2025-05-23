@@ -46,6 +46,7 @@ void update(void);
 void setup(char* obj_path){
 	//allocate required memory to hold color buffer
 	color_buffer = (uint32_t*) malloc(sizeof(uint32_t)*window_width*window_height);
+	inv_z_buffer = (float*) malloc(sizeof(float)*window_width*window_height);
 	
 	
 	//Creating a SDL texture that is used to display the color buffer
@@ -106,6 +107,14 @@ void process_input(void){
 			if(event.key.keysym.sym == SDLK_t){
 				TEXTURE_TRIANGLES = !TEXTURE_TRIANGLES;
 			}
+			if(event.key.keysym.sym == SDLK_g){
+				GOUROUD_SHADING = true;
+				FLAT_SHADING = false;
+			}
+			if(event.key.keysym.sym == SDLK_h){
+				GOUROUD_SHADING = false;
+				FLAT_SHADING = true;
+			}
 
 			break;
 	}
@@ -129,7 +138,7 @@ void update(void){
 	mesh.rotation.y += 0.01;
 	mesh.rotation.z += 0.01;
 	
-	//mesh.rotation.x  = -M_PI/4;
+//	mesh.rotation.x  = -M_PI/4;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -253,7 +262,7 @@ void update(void){
 	}
 
 	//Sort the triangls to rendered by their avg_depth
-	int num_triangles = array_length(triangles_to_render);
+	/*int num_triangles = array_length(triangles_to_render);
 	for(int i=0;i < num_triangles; i++){
 		for(int j=i ; j < num_triangles; j++){
 			if(triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth){
@@ -262,7 +271,7 @@ void update(void){
 				triangles_to_render[j] = tmp;
 			}
 		}
-	}
+	}*/
 }
 
 
@@ -334,6 +343,7 @@ void render(void){
 	
 	render_color_buffer();
 	clear_color_buffer(0xFFaabbcc);
+	clear_inv_z_buffer();
 
 	SDL_RenderPresent(renderer);                  //This swaps the back buffer (where drawing happens) with the front buffer (displayed on the screen), making the rendered image visible to the user
 }
@@ -344,6 +354,7 @@ void free_resources(){
 	array_free(mesh.transformed_vertices);
 	free_neighbor_list();
 	free(color_buffer);
+	free(inv_z_buffer);
 	free(texture);
 }
 

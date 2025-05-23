@@ -72,29 +72,9 @@ void fill_triangle(triangle_t *t,uint32_t color){
 		//int_swap(&a,&b);
 	}
 
-
-	
-	////////////////////////////////////////////////////////////
-	// Render the upper triangle (flat bottom)
-	////////////////////////////////////////////////////////////
-	float inv_slope1 = 0;
-	float inv_slope2 = 0;
-
-
-	if(y1 != y0) inv_slope1 =(float) (x1-x0) / (y1-y0);
-	if(y2 != y0) inv_slope2 =(float) (x2-x0) / (y2-y0);
-	
-	/*vec3_t a = {x0,y0,z0};
-	vec3_t b = {x1,y1,z1};
-	vec3_t c = {x2,y2,z2};
-
-	vec3_t normal_a = vec3_get_unit(vec3_cross(vec3_sub(b,a),vec3_sub(c,a))); //AB X AC
-	vec3_t normal_b = vec3_get_unit(vec3_cross(vec3_sub(c,b),vec3_sub(a,b))); //BC X BA
-	vec3_t normal_c = vec3_get_unit(vec3_cross(vec3_sub(a,c),vec3_sub(b,c))); //CA X CB
-
-	float dot_a = vec3_dot(normal_a,light_normal); 
-	float dot_b = vec3_dot(normal_b,light_normal); 
-	float dot_c = vec3_dot(normal_c,light_normal); */
+	float inv_w0 = 1.0/w0;
+	float inv_w1 = 1.0/w1;
+	float inv_w2 = 1.0/w2;
 
 	vec3_t light_normal = vec3_get_unit(light.direction);
 	
@@ -105,58 +85,24 @@ void fill_triangle(triangle_t *t,uint32_t color){
 	float dot_a = vec3_dot(avgn_a,light_normal); 
 	float dot_b = vec3_dot(avgn_b,light_normal); 
 	float dot_c = vec3_dot(avgn_c,light_normal);
-
 	
+	////////////////////////////////////////////////////////////
+	// Render the upper triangle (flat bottom)
+	////////////////////////////////////////////////////////////
+	float inv_slope1 = 0;
+	float inv_slope2 = 0;
+
+	if(y1 - y0 != 0) inv_slope1 =(float) (x1-x0) / (y1-y0);
+	if(y2 -y0  != 0) inv_slope2 =(float) (x2-x0) / (y2-y0);
+
+
 	//scan through the upper triangle
-	if(y1 != y0){								//if not lower triangle
+	if(y1 - y0 !=0 ){								//if not lower triangle
 		for(int y = y0; y <= y1 ;y++){
 			int x_start = x1 + (y-y1)*inv_slope1;
 			int x_end   = x0 + (y-y0)*inv_slope2;
-			if(!GOUROUD_SHADING){	
-				draw_line(x_start,y,x_end,y,color);
-			}else{	
+
 				
-				if(x_end < x_start) int_swap(&x_start, &x_end);
-					
-				for(int x = x_start; x < x_end; x++){
-					//calculate barycentric coords of current point
-					vec2_t p = {x,y};
-					vec2_t A = {t->points[0].x,t->points[0].y};
-					vec2_t B = {t->points[1].x,t->points[1].y};
-					vec2_t C = {t->points[2].x,t->points[2].y};
-
-					vec3_t weights = get_barycentric_coords(A,B,C,p);
-					float alpha = weights.x;
-					float beta = weights.y;
-					float gamma = weights.z;
-
-					//interpolate the dot product value at point p
-					float dot_p = alpha * dot_a + beta * dot_b + gamma * dot_c;
-					uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
-					draw_pixel(x,y,c);
-
-
-					
-				}
-			}
-		}
-	}
-
-	/////////////////////////////////////////////////////////////////////
-	//	Render the lower triangle
-	////////////////////////////////////////////////////////////////////
-	
-	if(y2 != y1) inv_slope1 = (float)(x2 - x1)/(y2-y1);
-	if(y2 != y0) inv_slope2 = (float)(x2 - x0)/(y2-y0);
-
-	for(int y = y1; y < y2; y++){
-		int x_start = x1 + (y - y1)*inv_slope1;
-		int x_end = x0 + (y - y0)*inv_slope2;
-
-		if(!GOUROUD_SHADING){	
-			draw_line(x_start,y,x_end,y,color);
-		}else{	
-			
 			if(x_end < x_start) int_swap(&x_start, &x_end);
 				
 			for(int x = x_start; x < x_end; x++){
@@ -173,11 +119,76 @@ void fill_triangle(triangle_t *t,uint32_t color){
 
 				//interpolate the dot product value at point p
 				float dot_p = alpha * dot_a + beta * dot_b + gamma * dot_c;
+				//interpolate the inv_z at point p
+				float inv_wp = alpha * inv_w0 + beta * inv_w1 + gamma * inv_w2;
 
 				uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
-				draw_pixel(x,y,c);
+				int cur_index = (window_width * y ) + x;
+				
+				inv_wp = 1.0 - inv_wp;
+				if(inv_wp < inv_z_buffer[cur_index]){
+					if(GOUROUD_SHADING)
+						draw_pixel(x,y,c);
+					else
+						draw_pixel(x,y,color);
+					inv_z_buffer[cur_index]  =inv_wp;
+				}
+
+
+				
+			}
+			
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	//	Render the lower triangle
+	////////////////////////////////////////////////////////////////////
+	inv_slope1 = 0;
+	inv_slope2 = 0;
+	if(y2 != y1) inv_slope1 = (float)(x2 - x1)/(y2-y1);
+	if(y2 != y0) inv_slope2 = (float)(x2 - x0)/(y2-y0);
+	
+	if(y2-y1 != 0){
+	for(int y = y1; y <= y2; y++){
+		int x_start = x1 + (y - y1)*inv_slope1;
+		int x_end = x0 + (y - y0)*inv_slope2;
+
+			
+		if(x_end < x_start) int_swap(&x_start, &x_end);
+			
+		for(int x = x_start; x < x_end; x++){
+			//calculate barycentric coords of current point
+			vec2_t p = {x,y};
+			vec2_t A = {t->points[0].x,t->points[0].y};
+			vec2_t B = {t->points[1].x,t->points[1].y};
+			vec2_t C = {t->points[2].x,t->points[2].y};
+
+			vec3_t weights = get_barycentric_coords(A,B,C,p);
+			float alpha = weights.x;
+			float beta = weights.y;
+			float gamma = weights.z;
+
+			//interpolate the dot product value at point p
+			float dot_p = alpha * dot_a + beta * dot_b + gamma * dot_c;
+			//interpolate the inv_z at point p
+			float inv_wp = alpha * inv_w0 + beta * inv_w1 + gamma * inv_w2;
+
+			uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
+			int cur_index = (window_width * y ) + x;
+
+			inv_wp = 1.0 - inv_wp;
+			
+			if(inv_wp < inv_z_buffer[cur_index]){
+				if(GOUROUD_SHADING)
+					draw_pixel(x,y,c);
+				else
+					draw_pixel(x,y,color);
+				inv_z_buffer[cur_index]  =inv_wp;
 			}
 		}
+		
+	}
 	}
 	
 }
