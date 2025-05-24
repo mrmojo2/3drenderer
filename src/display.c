@@ -20,11 +20,11 @@ bool initialize_window(void)
     }
 
     // use sdl to query the full screen size of the display
-    /*SDL_DisplayMode display_mode;
+    SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, &display_mode);
 
     window_width = display_mode.w;
-    window_height = display_mode.h;*/
+    window_height = display_mode.h;
 
     // Create SDL Window
     window = SDL_CreateWindow(
