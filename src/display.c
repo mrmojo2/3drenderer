@@ -112,7 +112,7 @@ void clear_inv_z_buffer(void)
     {
         for (int x = 0; x < window_width; x++)
         {
-            inv_z_buffer[(window_width * y) + x] = 1.0;		//in our coord z value grows from 0 to 1 ie the farthest objct has z value 1 
+            inv_z_buffer[(window_width * y) + x] = 0.0;		//in our coord z value grows from 0 to 1 ie the farthest objct has z value 1 
         }
     }
 }

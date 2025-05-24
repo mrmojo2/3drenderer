@@ -32,51 +32,59 @@ vec3_t get_vertex_avgn(int vi){
 void fill_triangle(triangle_t *t,uint32_t color){
 	int x0 = (t->points[0].x);
 	int y0 = (t->points[0].y);
-	int z0 = (t->points[0].z);
-	int w0 = (t->points[0].w);
+	float z0 = (t->points[0].z);
+	float w0 = (t->points[0].w);
 	int a = t->face->a;
 	
 	int y1 = (t->points[1].y);
 	int x1 = (t->points[1].x);
-	int z1 = (t->points[1].z);
-	int w1 = (t->points[1].w);
+	float z1 = (t->points[1].z);
+	float w1 = (t->points[1].w);
 	int b = t->face->b;
 	
 	int y2 = (t->points[2].y);
 	int x2 = (t->points[2].x);
-	int z2 = (t->points[2].z);
-	int w2 = (t->points[2].w);
+	float z2 = (t->points[2].z);
+	float w2 = (t->points[2].w);
 	int c = t->face->c;
 	
 	// sorting the triangle t  by y-cordinate ascending (y0 < y1 < y2)
 	if(y0 > y1){
 		int_swap(&y0,&y1);
 		int_swap(&x0,&x1);
-		int_swap(&w0,&w1);
-		int_swap(&z0,&z1);
-		//int_swap(&a,&b);
+		float_swap(&w0,&w1);
+		float_swap(&z0,&z1);
+		int_swap(&a,&b);
 
 	}
 	if(y1 > y2){
 		int_swap(&y1,&y2);
 		int_swap(&x1,&x2);
-		int_swap(&w1,&w2);
-		int_swap(&z1,&z2);
-		//int_swap(&b,&c);
+		float_swap(&w1,&w2);
+		float_swap(&z1,&z2);
+		int_swap(&b,&c);
 	}
 	if(y0 > y1){
 		int_swap(&y0,&y1);   	
 		int_swap(&x0,&x1);
-		int_swap(&w0,&w1);
-		int_swap(&z0,&z1);
-		//int_swap(&a,&b);
+		float_swap(&w0,&w1);
+		float_swap(&z0,&z1);
+		int_swap(&a,&b);
 	}
 
-	float inv_w0 = 1.0/w0;
-	float inv_w1 = 1.0/w1;
-	float inv_w2 = 1.0/w2;
+	float inv_w0 = 1.0f/w0;
+	float inv_w1 = 1.0f/w1;
+	float inv_w2 = 1.0f/w2;
 
 	vec3_t light_normal = vec3_get_unit(light.direction);
+	
+	/*vec2_t A = {t->points[0].x,t->points[0].y};
+	vec2_t B = {t->points[1].x,t->points[1].y};
+	vec2_t C = {t->points[2].x,t->points[2].y};*/
+	
+	vec2_t A = {x0,y0};
+	vec2_t B = {x1,y1};
+	vec2_t C = {x2,y2};
 	
 	vec3_t avgn_a = get_vertex_avgn(a);
 	vec3_t avgn_b = get_vertex_avgn(b);
@@ -92,8 +100,8 @@ void fill_triangle(triangle_t *t,uint32_t color){
 	float inv_slope1 = 0;
 	float inv_slope2 = 0;
 
-	if(y1 - y0 != 0) inv_slope1 =(float) (x1-x0) / (y1-y0);
-	if(y2 -y0  != 0) inv_slope2 =(float) (x2-x0) / (y2-y0);
+	if(y1 - y0 != 0) inv_slope1 =(float) (x1-x0) / abs(y1-y0);
+	if(y2 -y0  != 0) inv_slope2 =(float) (x2-x0) / abs(y2-y0);
 
 
 	//scan through the upper triangle
@@ -108,9 +116,6 @@ void fill_triangle(triangle_t *t,uint32_t color){
 			for(int x = x_start; x < x_end; x++){
 				//calculate barycentric coords of current point
 				vec2_t p = {x,y};
-				vec2_t A = {t->points[0].x,t->points[0].y};
-				vec2_t B = {t->points[1].x,t->points[1].y};
-				vec2_t C = {t->points[2].x,t->points[2].y};
 
 				vec3_t weights = get_barycentric_coords(A,B,C,p);
 				float alpha = weights.x;
@@ -125,13 +130,12 @@ void fill_triangle(triangle_t *t,uint32_t color){
 				uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
 				int cur_index = (window_width * y ) + x;
 				
-				inv_wp = 1.0 - inv_wp;
-				if(inv_wp < inv_z_buffer[cur_index]){
+				if(inv_wp > inv_z_buffer[cur_index]){
 					if(GOUROUD_SHADING)
 						draw_pixel(x,y,c);
 					else
 						draw_pixel(x,y,color);
-					inv_z_buffer[cur_index]  =inv_wp;
+					inv_z_buffer[cur_index]  = inv_wp;
 				}
 
 
@@ -146,8 +150,8 @@ void fill_triangle(triangle_t *t,uint32_t color){
 	////////////////////////////////////////////////////////////////////
 	inv_slope1 = 0;
 	inv_slope2 = 0;
-	if(y2 != y1) inv_slope1 = (float)(x2 - x1)/(y2-y1);
-	if(y2 != y0) inv_slope2 = (float)(x2 - x0)/(y2-y0);
+	if(y2 != y1) inv_slope1 = (float)(x2 - x1)/abs(y2-y1);
+	if(y2 != y0) inv_slope2 = (float)(x2 - x0)/abs(y2-y0);
 	
 	if(y2-y1 != 0){
 	for(int y = y1; y <= y2; y++){
@@ -160,9 +164,6 @@ void fill_triangle(triangle_t *t,uint32_t color){
 		for(int x = x_start; x < x_end; x++){
 			//calculate barycentric coords of current point
 			vec2_t p = {x,y};
-			vec2_t A = {t->points[0].x,t->points[0].y};
-			vec2_t B = {t->points[1].x,t->points[1].y};
-			vec2_t C = {t->points[2].x,t->points[2].y};
 
 			vec3_t weights = get_barycentric_coords(A,B,C,p);
 			float alpha = weights.x;
@@ -177,14 +178,14 @@ void fill_triangle(triangle_t *t,uint32_t color){
 			uint32_t c = light_apply_intensity(color, 1-(dot_p + 1)/2);
 			int cur_index = (window_width * y ) + x;
 
-			inv_wp = 1.0 - inv_wp;
 			
-			if(inv_wp < inv_z_buffer[cur_index]){
+			if(inv_wp > inv_z_buffer[cur_index]){
 				if(GOUROUD_SHADING)
 					draw_pixel(x,y,c);
 				else
 					draw_pixel(x,y,color);
-				inv_z_buffer[cur_index]  =inv_wp;
+				
+				inv_z_buffer[cur_index]  = inv_wp;
 			}
 		}
 		

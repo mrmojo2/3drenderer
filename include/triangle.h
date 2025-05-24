@@ -28,7 +28,6 @@ typedef struct {
 	vec4_t   points[3];
 	tex_t    texcoords[3];
 	uint32_t color;
-	float    avg_depth;
 } triangle_t;
 
 void draw_triangle(triangle_t t, uint32_t color);

@@ -16,6 +16,7 @@
 #include "options.h"
 
 #define M_PI 3.141592
+#define MAX_NUM_TRIANGLES 10000
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                DIFFERENT OPTIONS FOR RENDERING
@@ -31,7 +32,8 @@ bool GOUROUD_SHADING  = true;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //                GLOBALS
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-triangle_t* triangles_to_render = NULL;
+triangle_t triangles_to_render[MAX_NUM_TRIANGLES];
+int num_triangles = 0;
 vec3_t camera_position = {0,0,0};
 bool is_running = false;
 int previous_frame_time=0;
@@ -130,15 +132,15 @@ void update(void){
 	
 	previous_frame_time = SDL_GetTicks();            //how may ms since SDL_INIT
 
-	//initialize the dynamic arrray of triangles to render
-	triangles_to_render = NULL;
-
+	//initiaze index of triangles to render
+	num_triangles = 0;
+	
 	//rotate and scale the mesh object
 	mesh.rotation.x += 0.01;
 	mesh.rotation.y += 0.01;
 	mesh.rotation.z += 0.01;
 	
-//	mesh.rotation.x  = -M_PI/4;
+	//mesh.rotation.x  = -M_PI/4;
 
 	//mesh.scale.x    += 0.002;
 	//mesh.scale.y    += 0.001;
@@ -236,9 +238,6 @@ void update(void){
 			projected_vertices[j].y += (window_height / 2.0);
 		}
 
-		//calculate the avg depth of each face based on the vertices after transformation
-		float avg_z = (transformed_vertices[0].z+transformed_vertices[1].z+transformed_vertices[2].z)/3.0;
-
 		triangle_t projected_triangle = {
 			.face = &(mesh.faces[i]),
 			.points = {
@@ -248,7 +247,6 @@ void update(void){
 			},
 
 			.color = mesh_face.color,
-			.avg_depth = avg_z,
 			.texcoords = {
 				{mesh_face.a_uv.u, mesh_face.a_uv.v},
 				{mesh_face.b_uv.u, mesh_face.b_uv.v},
@@ -257,21 +255,11 @@ void update(void){
 		};
 		
 		//save the projected triangle in the array of triangles to render
-		array_push(triangles_to_render, projected_triangle);	
+		if(num_triangles < MAX_NUM_TRIANGLES)
+			triangles_to_render[num_triangles++] = projected_triangle;
 		
 	}
 
-	//Sort the triangls to rendered by their avg_depth
-	/*int num_triangles = array_length(triangles_to_render);
-	for(int i=0;i < num_triangles; i++){
-		for(int j=i ; j < num_triangles; j++){
-			if(triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth){
-				triangle_t tmp = triangles_to_render[i];
-				triangles_to_render[i] = triangles_to_render[j];
-				triangles_to_render[j] = tmp;
-			}
-		}
-	}*/
 }
 
 
@@ -279,7 +267,6 @@ void render(void){
 	//draw_grid(10);
 
 	//loop all projected triangles and render them
-	int num_triangles = array_length(triangles_to_render);
 	for(int i=0;i<num_triangles;i++){
 		triangle_t triangle = triangles_to_render[i];
 	
@@ -334,11 +321,6 @@ void render(void){
 			draw_rect(vertex.x, vertex.y,5,5,0xffff0000);
 		}
 	}*/
-
-
-
-	//clear the array of triangles to render every frame loop
-	array_free(triangles_to_render);
 
 	
 	render_color_buffer();
