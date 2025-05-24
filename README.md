@@ -6,7 +6,7 @@ A simple 3D rendering engine based on rasterization. This project demonstrates t
 ## Output Preview
 
 **Wireframe Rendering:**
-![Wireframe Output](assets/teapot_outline.png)
+![Wireframe Output](assets/teapot_outline2.png)
 
 **Flat Shading:**
 ![Flat Shading Output](assets/teapot_flat.png)
