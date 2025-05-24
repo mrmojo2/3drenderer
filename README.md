@@ -5,8 +5,14 @@ A simple 3D rendering engine based on rasterization. This project demonstrates t
 
 ## Output Preview
 
-![3D Renderer Output](assets/torus.gif)
+**Wireframe Rendering:**
+![Wireframe Output](assets/teapot_outline.png)
 
+**Flat Shading:**
+![Flat Shading Output](assets/teapot_flat.png)
+
+**Gouraud Shading:**
+![Gouraud Shading Output](assets/teapot_gouroud.png)
 ## Getting Started
 
 ### Requirements
