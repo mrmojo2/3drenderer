@@ -6,8 +6,10 @@ SDL_Renderer *renderer = NULL;
 uint32_t *color_buffer = NULL;
 float* inv_z_buffer = NULL;
 SDL_Texture *color_buffer_texture = NULL;
-int window_width = 800;
-int window_height = 600;
+int window_width = 900;
+int window_height = 700;
+bool is_window_dragging = false;
+int drag_x,drag_y;
 
 bool initialize_window(void)
 {
@@ -18,11 +20,11 @@ bool initialize_window(void)
     }
 
     // use sdl to query the full screen size of the display
-    SDL_DisplayMode display_mode;
+    /*SDL_DisplayMode display_mode;
     SDL_GetCurrentDisplayMode(0, &display_mode);
 
     window_width = display_mode.w;
-    window_height = display_mode.h;
+    window_height = display_mode.h;*/
 
     // Create SDL Window
     window = SDL_CreateWindow(
@@ -52,7 +54,6 @@ bool initialize_window(void)
         return false;
     }
 
-    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN); // Change video mode to be real fullscreen from fake fullscreen
 
     return true;
 }

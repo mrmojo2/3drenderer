@@ -91,7 +91,8 @@ float max_of_three(float a, float b, float c) {
 }
 
 void load_obj_to_mesh(FILE *f)
-{
+{	
+	printf("loading obj file...");
 	float max_vertex = 0.0f;
 	char line_buffer[LINE_BUFFER];
 	while (fgets(line_buffer, LINE_BUFFER, f))
@@ -126,11 +127,14 @@ void load_obj_to_mesh(FILE *f)
 
 	if(max_vertex < 1){
 		vec3_t scale = {1.0f/max_vertex,1.0f/max_vertex,1.0f/max_vertex};
+		scale = vec3_mul(scale,2.0f);
 		mesh.scale = scale;
 	}
+	printf("load complete\n");
 }
 
 void generate_vertex_neighbor(void){
+	printf("creating vertex neighbor list...");
 	int num_vertices = array_length(mesh.world_vertices);
 	int num_faces = array_length(mesh.faces);
 	printf("num vertices: %d ",num_vertices);
@@ -149,6 +153,7 @@ void generate_vertex_neighbor(void){
 		array_push(mesh.vertex_neighbor_list, neighbors);
 	}
 	
+	printf("created\n");
 }
 
 void free_neighbor_list(void){

@@ -21,6 +21,9 @@ extern float* inv_z_buffer;
 extern SDL_Texture *color_buffer_texture;
 extern int window_width;
 extern int window_height;
+extern bool is_window_dragging;
+extern int drag_x;
+extern int drag_y;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                   FUNCTIONS

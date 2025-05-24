@@ -85,40 +85,67 @@ void setup(char* obj_path){
 
 void process_input(void){
 	SDL_Event event;
-	SDL_PollEvent(&event);
-	switch (event.type){
-		case SDL_QUIT:
-			is_running = false;
-			break;
-		case SDL_KEYDOWN:
-			if(event.key.keysym.sym == SDLK_ESCAPE){
+	while(SDL_PollEvent(&event) !=0 ){
+		switch (event.type){
+			case SDL_QUIT:
 				is_running = false;
-			}
-			if(event.key.keysym.sym == SDLK_c){
-				BACK_FACE_CULLING = !BACK_FACE_CULLING;
-			}
-			if(event.key.keysym.sym == SDLK_s){
-				SHADING = !SHADING; 
-			}
-			if(event.key.keysym.sym == SDLK_f){
-				FILL_TRIANGLES = !FILL_TRIANGLES;
-			}
-			if(event.key.keysym.sym == SDLK_o){
-				OUTLINE_TRIANGLES = !OUTLINE_TRIANGLES;
-			}
-			if(event.key.keysym.sym == SDLK_t){
-				TEXTURE_TRIANGLES = !TEXTURE_TRIANGLES;
-			}
-			if(event.key.keysym.sym == SDLK_g){
-				GOUROUD_SHADING = true;
-				FLAT_SHADING = false;
-			}
-			if(event.key.keysym.sym == SDLK_h){
-				GOUROUD_SHADING = false;
-				FLAT_SHADING = true;
-			}
+				break;
+			case SDL_KEYDOWN:
+				if(event.key.keysym.sym == SDLK_ESCAPE){
+					is_running = false;
+				}
+				if(event.key.keysym.sym == SDLK_c){
+					BACK_FACE_CULLING = !BACK_FACE_CULLING;
+				}
+				if(event.key.keysym.sym == SDLK_s){
+					SHADING = !SHADING; 
+				}
+				if(event.key.keysym.sym == SDLK_f){
+					FILL_TRIANGLES = !FILL_TRIANGLES;
+				}
+				if(event.key.keysym.sym == SDLK_o){
+					OUTLINE_TRIANGLES = !OUTLINE_TRIANGLES;
+				}
+				if(event.key.keysym.sym == SDLK_t){
+					TEXTURE_TRIANGLES = !TEXTURE_TRIANGLES;
+				}
+				if(event.key.keysym.sym == SDLK_g){
+					GOUROUD_SHADING = true;
+					FLAT_SHADING = false;
+				}
+				if(event.key.keysym.sym == SDLK_h){
+					GOUROUD_SHADING = false;
+					FLAT_SHADING = true;
+				}
 
-			break;
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if(event.button.button == SDL_BUTTON_LEFT){
+					int mouse_x, mouse_y;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+					if(mouse_y >=0 && mouse_y <=50){
+						is_window_dragging = true;
+						SDL_GetGlobalMouseState(&drag_x, &drag_y);
+						int window_x,window_y;
+						SDL_GetWindowPosition(window,&window_x, &window_y);
+						drag_x -= window_x;
+						drag_y -= window_y;
+					}
+				}
+				break;
+			case SDL_MOUSEBUTTONUP:
+				if(event.button.button == SDL_BUTTON_LEFT){
+					is_window_dragging = false;
+				}
+				break;
+			case SDL_MOUSEMOTION:
+				if(is_window_dragging){
+					int mouse_x, mouse_y;
+					SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+					SDL_SetWindowPosition(window,mouse_x-drag_x, mouse_y-drag_y);
+				}
+				break;
+		}
 	}
 }
 
@@ -134,18 +161,7 @@ void update(void){
 
 	//initiaze index of triangles to render
 	num_triangles = 0;
-	
-	//rotate and scale the mesh object
-	mesh.rotation.x += 0.01;
-	mesh.rotation.y += 0.01;
-	mesh.rotation.z += 0.01;
-	
-	//mesh.rotation.x  = -M_PI/4;
-
-	//mesh.scale.x    += 0.002;
-	//mesh.scale.y    += 0.001;
-
-	//mesh.translation.x += 0.01;
+	mesh.rotation.x = -M_PI/6;		
 	mesh.translation.z = 5;			//move points away from camera
 
 

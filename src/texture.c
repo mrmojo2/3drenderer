@@ -12,6 +12,7 @@ unsigned texture_height;
 uint32_t *texture = NULL;
 
 void load_png_texture(const char *filename){
+	printf("loading texture....");
 	unsigned char *image = 	NULL;
 	unsigned error = lodepng_decode32_file(&image,&texture_width,&texture_height,filename);
 	if(error){
@@ -36,4 +37,6 @@ void load_png_texture(const char *filename){
 	}
 
 	free(image);
+
+	printf("load complete\n");
 }
