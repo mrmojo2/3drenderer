@@ -79,10 +79,20 @@ void string_n_get(char *main_string, const char *delim,int n, char *splitted){
 	strcpy(splitted,token);
 }
 
-
+float max_of_three(float a, float b, float c) {
+    float max = a;
+    if (b > max) {
+        max = b;
+    }
+    if (c > max) {
+        max = c;
+    }
+    return max;
+}
 
 void load_obj_to_mesh(FILE *f)
 {
+	float max_vertex = 0.0f;
 	char line_buffer[LINE_BUFFER];
 	while (fgets(line_buffer, LINE_BUFFER, f))
 	{
@@ -91,7 +101,11 @@ void load_obj_to_mesh(FILE *f)
 			vec3_t vertex;	
 			sscanf(line_buffer,"v %f %f %f",&vertex.x,&vertex.y,&vertex.z);
 			array_push(mesh.world_vertices,vertex);
+			float cur_max = max_of_three(vertex.x,vertex.y,vertex.z);
+			if(cur_max > max_vertex)
+				max_vertex = cur_max;
 			//printf("v %f %f %f\n",vertex.x, vertex.y, vertex.z);
+			
 		}
 		else if (strncmp(line_buffer, "f ", 2) == 0)
 		{
@@ -108,6 +122,11 @@ void load_obj_to_mesh(FILE *f)
 			//printf("f %d %d %d\n",face.a, face.b, face.c); 
 			array_push(mesh.faces, face);
 		}
+	}
+
+	if(max_vertex < 1){
+		vec3_t scale = {1.0f/max_vertex,1.0f/max_vertex,1.0f/max_vertex};
+		mesh.scale = scale;
 	}
 }
 
@@ -130,15 +149,6 @@ void generate_vertex_neighbor(void){
 		array_push(mesh.vertex_neighbor_list, neighbors);
 	}
 	
-	int s = array_length(mesh.vertex_neighbor_list);
-	for(int i=0; i<s; i++){
-		int is = array_length(mesh.vertex_neighbor_list[i]);
-		for(int j = 0; j<is; j++){
-			face_t* current = ((face_t **)mesh.vertex_neighbor_list[i])[j];
-			printf("(%d,%d,%d)  ",current->a,current->b,current->c);
-		}
-		printf("\n");
-	}
 }
 
 void free_neighbor_list(void){
